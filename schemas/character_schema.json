@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/YOUR_ORG/scene-consistency-rag-systems/schemas/character-v1.0.json",
+  "version": "1.0.0",
+  "title": "Character Schema",
+  "description": "Minimal schema for character scene consistency in RAG system",
+  "type": "object",
+  "required": [
+    "character_id",
+    "name",
+    "canonical_image_path",
+    "lora_trigger_word",
+    "appearance"
+  ],
+  "properties": {
+    "character_id": {
+      "type": "string",
+      "description": "Unique identifier for the character",
+      "pattern": "^char_[a-z_]+_\\d{3}$",
+      "examples": ["char_isaac_001", "char_gertie_001"]
+    },
+    "name": {
+      "type": "string",
+      "description": "Character name",
+      "minLength": 1,
+      "examples": ["Isaac", "Gertie", "Baolin"]
+    },
+    "canonical_image_path": {
+      "type": "string",
+      "description": "Path or URI to reference image",
+      "pattern": "^(data/characters/|https?://|s3://|gs://).+\\.(jpg|jpeg|png|webp)$",
+      "examples": [
+        "data/characters/isaac.png",
+        "https://storage.example.com/characters/Isaac_v2.jpg",
+        "s3://bucket/characters/isaac_001.png"
+      ],
+      "$comment": "Supports local paths, HTTP URLs, and cloud storage (S3, GCS)"
+    },
+    "lora_trigger_word": {
+      "type": "string",
+      "description": "LoRA trigger for Stable Diffusion",
+      "pattern": "^<lora:[a-z0-9_]+_v\\d+(\\.\\d+)?:\\d+(\\.\\d+)?>$",
+      "examples": [
+        "<lora:isaac_v1:1.0>",
+        "<lora:isaac_v10:1>",
+        "<lora:gertie_v2.1:0.8>",
+        "<lora:dr_smith_v3:1.5>"
+      ],
+      "$comment": "Format: <lora:{model_name}_v{version}:{weight}> where weight is optional decimal"
+    },
+    "appearance": {
+      "type": "string",
+      "description": "Canonical visual appearance description",
+      "minLength": 20,
+      "maxLength": 500,
+      "examples": [
+        "white t-shirt, short brown hair, athletic build, casual style"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "description": "Searchable tags for filtering",
+      "items": {
+        "type": "string",
+        "enum": [
+          "male", "female", "non_binary",
+          "protagonist", "antagonist", "supporting", "background",
+          "human", "cybernetic", "android", "spiritual",
+          "office_setting", "rooftop_setting", "lab_setting", "urban_setting",
+          "daytime", "nighttime", "indoor", "outdoor"
+        ]
+      },
+      "uniqueItems": true,
+      "examples": [
+        ["male", "protagonist", "human", "office_setting"]
+      ],
+      "$comment": "Standardized taxonomy for consistent retrieval"
+    },
+    "embedding_id": {
+      "type": "string",
+      "description": "Reference to vector embedding",
+      "pattern": "^emb_char_[a-z_]+_\\d{3}$",
+      "examples": ["emb_char_isaac_001", "emb_char_dr_smith_001"],
+      "$comment": "Must derive from character_id: char_X_### → emb_char_X_###"
+    },
+    "metadata": {
+      "$ref": "metadata_schema.json",
+      "description": "Shared metadata structure"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": ["character_id", "embedding_id"]
+      },
+      "then": {
+        "properties": {
+          "embedding_id": {
+            "pattern": "^emb_char_[a-z_]+_\\d{3}$",
+            "$comment": "Embedding ID must derive from character_id for consistency"
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

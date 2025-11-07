@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/YOUR_ORG/scene-consistency-rag-systems/schemas/location-v1.0.json",
+  "version": "1.0.0",
+  "title": "Location Schema",
+  "description": "Minimal schema for location scene consistency in RAG system",
+  "type": "object",
+  "required": [
+    "location_id",
+    "name",
+    "description"
+  ],
+  "properties": {
+    "location_id": {
+      "type": "string",
+      "description": "Unique identifier for the location",
+      "pattern": "^loc_[a-z_]+_\\d{3}$",
+      "examples": ["loc_office_001", "loc_rooftop_001"]
+    },
+    "name": {
+      "type": "string",
+      "description": "Location name",
+      "minLength": 1,
+      "examples": ["Isaac's Office", "Rooftop at Sunset"]
+    },
+    "description": {
+      "type": "string",
+      "description": "Visual description of the location",
+      "minLength": 20,
+      "maxLength": 500,
+      "examples": [
+        "warmly lit office interior, wooden shelves and drawers, desk with monitor, large window with city skyline view"
+      ]
+    },
+    "type": {
+      "type": "string",
+      "description": "Location type",
+      "enum": ["indoor", "outdoor", "mixed"],
+      "examples": ["indoor", "outdoor"]
+    },
+    "tags": {
+      "type": "array",
+      "description": "Searchable tags for filtering",
+      "items": {
+        "type": "string",
+        "enum": [
+          "office", "workspace", "residential", "commercial", "industrial",
+          "urban", "suburban", "rural", "natural",
+          "indoor", "outdoor", "mixed",
+          "daytime", "nighttime", "dawn", "dusk",
+          "modern", "futuristic", "traditional", "abandoned"
+        ]
+      },
+      "uniqueItems": true,
+      "examples": [
+        ["office", "workspace", "urban", "indoor", "modern"]
+      ],
+      "$comment": "Standardized taxonomy for consistent retrieval"
+    },
+    "embedding_id": {
+      "type": "string",
+      "description": "Reference to vector embedding",
+      "pattern": "^emb_loc_[a-z_]+_\\d{3}$",
+      "examples": ["emb_loc_office_001", "emb_loc_city_center_001"],
+      "$comment": "Must derive from location_id: loc_X_### → emb_loc_X_###"
+    },
+    "canonical_image_path": {
+      "type": "string",
+      "description": "Optional path or URI to location reference image",
+      "pattern": "^(data/locations/|https?://|s3://|gs://).+\\.(jpg|jpeg|png|webp)$",
+      "examples": [
+        "data/locations/office.jpg",
+        "https://storage.example.com/locations/rooftop_v2.png",
+        "s3://bucket/locations/lab_001.jpg"
+      ],
+      "$comment": "Supports local paths, HTTP URLs, and cloud storage (S3, GCS)"
+    },
+    "metadata": {
+      "$ref": "metadata_schema.json",
+      "description": "Shared metadata structure"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": ["location_id", "embedding_id"]
+      },
+      "then": {
+        "properties": {
+          "embedding_id": {
+            "pattern": "^emb_loc_[a-z_]+_\\d{3}$",
+            "$comment": "Embedding ID must derive from location_id for consistency"
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}
