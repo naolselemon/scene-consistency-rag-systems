@@ -24,7 +24,7 @@
     "version": {
       "type": "string",
       "pattern": "^\\d+\\.\\d+$",
-      "description": "Schema version",
+      "description": "Schema definition version",
       "examples": ["1.0", "1.1"]
     },
     "confidence": {

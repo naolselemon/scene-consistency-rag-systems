@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/YOUR_ORG/scene-consistency-rag-systems/schemas/location-v1.0.json",
-  "version": "1.0.0",
+  "$id": "https://github.com/Long-form-AI-video-generation/scene-consistency-rag-systems/schemas/location-v1.1.json",
+  "version": "1.1.0",
   "title": "Location Schema",
   "description": "Minimal schema for location scene consistency in RAG system",
   "type": "object",
@@ -40,22 +40,20 @@
     },
     "tags": {
       "type": "array",
-      "description": "Searchable tags for filtering",
+      "description": "Searchable tags describing the location's inherent style and environment.",
       "items": {
         "type": "string",
         "enum": [
-          "office", "workspace", "residential", "commercial", "industrial",
+          "residential", "commercial", "industrial",
           "urban", "suburban", "rural", "natural",
-          "indoor", "outdoor", "mixed",
-          "daytime", "nighttime", "dawn", "dusk",
           "modern", "futuristic", "traditional", "abandoned"
         ]
       },
       "uniqueItems": true,
       "examples": [
-        ["office", "workspace", "urban", "indoor", "modern"]
+        ["urban", "modern"]
       ],
-      "$comment": "Standardized taxonomy for consistent retrieval"
+      "$comment": "Standardized taxonomy for consistent retrieval. Scene-specific context like time of day is now handled by the 'setting' object."
     },
     "embedding_id": {
       "type": "string",
@@ -74,6 +72,45 @@
         "s3://bucket/locations/lab_001.jpg"
       ],
       "$comment": "Supports local paths, HTTP URLs, and cloud storage (S3, GCS)"
+    },
+    "setting": {
+      "type": "object",
+      "description": "Contextual scene setting metadata for enforcing visual and temporal consistency in RAG retrieval",
+      "properties": {
+        "location": {
+          "type": "string",
+          "description": "Primary location descriptor",
+          "examples": ["office", "laboratory", "street", "bedroom"]
+        },
+        "time_of_day": {
+          "type": "string",
+          "description": "Time context of the scene",
+          "enum": ["daytime", "nighttime", "dawn", "dusk"],
+          "examples": ["daytime"]
+        },
+        "weather": {
+          "type": "string",
+          "description": "Weather or ambient condition",
+          "enum": ["sunny", "cloudy", "rainy", "stormy", "snowy", "foggy"],
+          "examples": ["sunny"]
+        },
+        "props": {
+          "type": "array",
+          "description": "Key objects or scene props present in the location",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["desk", "laptop", "chair"]]
+        }
+      },
+      "required": ["location"],
+      "additionalProperties": false
+    },
+    "entity_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version number for the canonical entity record, incremented when the entity definition changes",
+      "examples": [1, 2, 3]
     },
     "metadata": {
       "$ref": "metadata_schema.json",

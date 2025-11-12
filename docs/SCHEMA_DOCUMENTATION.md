@@ -1,17 +1,23 @@
 # Schema Documentation
 
-**Version**: 1.0  
-**Purpose**: Documentation for Scene Consistency RAG System schemas
+**Version**: 1.1
+
+**Last Updated**: 2025-11-12
+
+---
+
+### Changelog
+
+**v1.1 (2025-11-12)**
+- **Added `entity_version` field** to Character and Location schemas to track canonical data revisions.
+- **Added `setting` object** to Location schema for richer, structured scene context (time, weather, props).
+- **Cleaned up `tags` enums** in Character and Location schemas to separate inherent traits from scene-specific context.
 
 ---
 
 ## Overview
 
 This document provides comprehensive documentation for the core schemas in the Scene Consistency RAG system. Each schema is designed to maintain visual consistency of characters and locations across anime video generation scenes.
-
-**Note**: This covers the 3 core schemas implemented in Phase 1. The embedding strategy is defined in a separate configuration schema for Phase 2 implementation.
-
----
 
 ## Schema Files
 
@@ -27,7 +33,7 @@ This document provides comprehensive documentation for the core schemas in the S
 
 ## Character Attribute Schema
 
-### **File**: `schemas/character_schema.json`
+### **File**: `schemas/character_schema.json` (v1.1)
 
 ### **Purpose**
 Defines the structure for character data to ensure visual consistency across scenes.
@@ -46,17 +52,19 @@ Defines the structure for character data to ensure visual consistency across sce
 
 | Field | Type | Description | Example |
 |-------|------|-------------|---------|
-| `tags` | array | Searchable keywords | `["isaac", "male", "protagonist"]` |
+| `entity_version` | integer | Canonical version of the data record | `1`, `2` |
+| `tags` | array | Inherent character traits | `["male", "protagonist", "human"]` |
 | `embedding_id` | string | Vector embedding reference | `"emb_char_isaac_001"` |
 | `metadata` | object | Provenance and timestamps | See metadata structure |
 
 ### **Validation Rules**
 
-- `character_id`: Must match pattern `^char_[a-z_]+_\\d{3}$` (allows underscores)
-- `canonical_image_path`: Must match pattern `^(data/characters/|https?://|s3://|gs://).+\\.(jpg|jpeg|png|webp)$` (supports local paths and cloud storage)
-- `lora_trigger_word`: Must match pattern `^<lora:[a-z0-9_]+_v\\d+(\\.\\d+)?:\\d+(\\.\\d+)?>$` (flexible versioning and weights)
-- `appearance`: Must be 20-500 characters
-- `tags`: Must use standardized taxonomy (gender, role, species, setting, time)
+- `character_id`: Must match pattern `^char_[a-z_]+_\\d{3}$`.
+- `canonical_image_path`: Must match pattern `^(data/characters/|https?://|s3://|gs://).+\.(jpg|jpeg|png|webp)$`.
+- `lora_trigger_word`: Must match pattern `^<lora:[a-z0-9_]+_v\\d+(\\.\\d+)?:\\d+(\\.\\d+)?>$`.
+- `appearance`: Must be 20-500 characters.
+- `tags`: Must use the standardized taxonomy for inherent traits only: `male`, `female`, `non_binary`, `protagonist`, `antagonist`, `supporting`, `background`, `human`, `cybernetic`, `android`, `spiritual`.
+- `entity_version`: Must be an integer >= 1.
 
 ### **Example Character**
 
@@ -64,15 +72,17 @@ Defines the structure for character data to ensure visual consistency across sce
 {
   "character_id": "char_isaac_001",
   "name": "Isaac",
+  "entity_version": 1,
   "canonical_image_path": "data/characters/isaac.png",
   "lora_trigger_word": "<lora:isaac_v1:1.0>",
   "appearance": "Isaac, white t-shirt, short brown hair, athletic build, confident expression",
-  "tags": ["male", "protagonist", "human", "office_setting"],
+  "tags": ["male", "protagonist", "human"],
   "embedding_id": "emb_char_isaac_001",
   "metadata": {
     "source": "issac.txt",
     "created_at": "2025-11-07T14:00:00Z",
-    "updated_at": "2025-11-07T14:00:00Z"
+    "updated_at": "2025-11-12T10:00:00Z",
+    "version": "1.1.0"
   }
 }
 ```
@@ -81,7 +91,7 @@ Defines the structure for character data to ensure visual consistency across sce
 
 ## Location/World-Building Schema
 
-### **File**: `schemas/location_schema.json`
+### **File**: `schemas/location_schema.json` (v1.1)
 
 ### **Purpose**
 Defines the structure for location data to ensure environmental consistency across scenes.
@@ -92,25 +102,27 @@ Defines the structure for location data to ensure environmental consistency acro
 |-------|------|-------------|---------|
 | `location_id` | string | Unique identifier | `"loc_office_001"` |
 | `name` | string | Location name | `"Isaac's Office"` |
-| `description` | string | Visual description | `"warmly lit office interior, wooden shelves"` |
+| `description` | string | Visual description | `"warmly lit office interior..."` |
 
 ### **Optional Fields**
 
 | Field | Type | Description | Example |
 |-------|------|-------------|---------|
-| `type` | string | Location classification | `"indoor"`, `"outdoor"`, `"mixed"` |
-| `tags` | array | Searchable keywords | `["office", "workspace", "urban"]` |
+| `entity_version` | integer | Canonical version of the data record | `1`, `2` |
+| `setting` | object | Default environmental context | `{"location": "office", "time_of_day": "daytime"}` |
+| `type` | string | Location classification | `"indoor"` |
+| `tags` | array | **Inherent location styles/types** | `["workspace", "urban", "modern"]` |
 | `embedding_id` | string | Vector embedding reference | `"emb_loc_office_001"` |
 | `canonical_image_path` | string | Reference image path | `"data/locations/office.jpg"` |
 | `metadata` | object | Provenance and timestamps | See metadata structure |
 
 ### **Validation Rules**
 
-- `location_id`: Must match pattern `^loc_[a-z_]+_\\d{3}$` (allows underscores)
-- `description`: Must be 20-500 characters
-- `type`: Must be one of: `indoor`, `outdoor`, `mixed`
-- `canonical_image_path`: Must match pattern `^(data/locations/|https?://|s3://|gs://).+\\.(jpg|jpeg|png|webp)$` (supports local paths and cloud storage)
-- `tags`: Must use standardized taxonomy (location type, environment, time, style)
+- `location_id`: Must match pattern `^loc_[a-z_]+_\\d{3}$`.
+- `description`: Must be 20-500 characters.
+- `tags`: Must use the standardized taxonomy for **inherent styles only**: `residential`, `commercial`, `industrial`, `urban`, `suburban`, `rural`, `natural`, `modern`, `futuristic`, `traditional`, `abandoned`.
+- `setting`: A nested object with its own properties (`location`, `time_of_day`, `weather`, `props`).
+- `entity_version`: Must be an integer >= 1.
 
 ### **Example Location**
 
@@ -118,18 +130,25 @@ Defines the structure for location data to ensure environmental consistency acro
 {
   "location_id": "loc_office_001",
   "name": "Isaac's Office",
+  "entity_version": 1,
   "description": "warmly lit office interior, wooden shelves and drawers, desk with monitor, large window with city skyline view",
   "type": "indoor",
-  "tags": ["office", "workspace", "urban", "indoor", "modern"],
+  "tags": ["workspace", "urban", "modern"],
+  "setting": {
+    "location": "office",
+    "time_of_day": "daytime",
+    "weather": "sunny",
+    "props": ["desk", "monitor", "window"]
+  },
   "embedding_id": "emb_loc_office_001",
   "metadata": {
-    "source": "issac.txt",
+    "source": "manual_entry",
     "created_at": "2025-11-07T14:00:00Z",
-    "updated_at": "2025-11-07T14:00:00Z"
+    "updated_at": "2025-11-12T10:00:00Z",
+    "version": "1.1.0"
   }
 }
 ```
-
 ---
 
 ## Relationship Schema
@@ -193,6 +212,7 @@ Defines individual relationships between characters and locations for RAG retrie
 
 ---
 
+
 ## Relationships Collection Schema
 
 ### **File**: `schemas/relationships_collection_schema.json`
@@ -229,7 +249,6 @@ Schema for collections of relationship objects, useful for bulk operations and d
 }
 ```
 
----
 
 ## Shared Metadata Schema
 
@@ -244,14 +263,10 @@ Standardized metadata structure shared across all entity schemas for consistency
 |-------|------|-------------|---------|
 | `source` | string | Data origin | `"script_analysis"` |
 | `created_at` | string | Creation timestamp | `"2025-11-07T14:00:00Z"` |
-| `updated_at` | string | Update timestamp | `"2025-11-07T14:00:00Z"` |
-| `version` | string | Schema version | `"1.0"` |
+| `updated_at` | string | **Last data update** timestamp | `"2025-11-12T10:00:00Z"` |
+| `version` | string | **Schema definition** version | `"1.1.0"` |
 | `confidence` | number | Quality score (0.0-1.0) | `0.92` |
 | `validation_status` | string | Validation state | `"validated"` |
 
 ### **Usage**
-
-All entity schemas (character, location, relationship) reference this shared schema using `$ref`, ensuring consistent metadata structure across the system.
-
-
-The schemas provide a solid foundation for the Scene Consistency RAG system while maintaining simplicity and focus on the core goal: visual consistency across scenes.
+All entity schemas... reference this shared schema. This ensures a clear distinction between the **data version (`entity_version`)** and the **schema version (`metadata.version`)**.

@@ -1,9 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/YOUR_ORG/scene-consistency-rag-systems/schemas/character-v1.0.json",
-  "version": "1.0.0",
+  "$id": "https://github.com/Long-form-AI-video-generation/scene-consistency-rag-systems/schemas/character-v1.1.json",
+  "version": "1.1.0",
   "title": "Character Schema",
-  "description": "Minimal schema for character scene consistency in RAG system",
+  "description": "Schema for character scene consistency in RAG system",
   "type": "object",
   "required": [
     "character_id",
@@ -30,9 +30,7 @@
       "description": "Path or URI to reference image",
       "pattern": "^(data/characters/|https?://|s3://|gs://).+\\.(jpg|jpeg|png|webp)$",
       "examples": [
-        "data/characters/isaac.png",
-        "https://storage.example.com/characters/Isaac_v2.jpg",
-        "s3://bucket/characters/isaac_001.png"
+        "data/characters/isaac.png"
       ],
       "$comment": "Supports local paths, HTTP URLs, and cloud storage (S3, GCS)"
     },
@@ -59,20 +57,18 @@
     },
     "tags": {
       "type": "array",
-      "description": "Searchable tags for filtering",
+      "description": "Searchable tags for filtering describing inherent character traits.",
       "items": {
         "type": "string",
         "enum": [
           "male", "female", "non_binary",
           "protagonist", "antagonist", "supporting", "background",
-          "human", "cybernetic", "android", "spiritual",
-          "office_setting", "rooftop_setting", "lab_setting", "urban_setting",
-          "daytime", "nighttime", "indoor", "outdoor"
+          "human", "cybernetic", "android", "spiritual"
         ]
       },
       "uniqueItems": true,
       "examples": [
-        ["male", "protagonist", "human", "office_setting"]
+        ["male", "protagonist", "human"]
       ],
       "$comment": "Standardized taxonomy for consistent retrieval"
     },
@@ -82,6 +78,12 @@
       "pattern": "^emb_char_[a-z_]+_\\d{3}$",
       "examples": ["emb_char_isaac_001", "emb_char_dr_smith_001"],
       "$comment": "Must derive from character_id: char_X_### → emb_char_X_###"
+    },
+    "entity_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version number for the canonical character record, incremented when the entity definition changes",
+      "examples": [1, 2, 3]
     },
     "metadata": {
       "$ref": "metadata_schema.json",
