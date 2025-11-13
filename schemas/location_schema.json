@@ -1,0 +1,136 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Long-form-AI-video-generation/scene-consistency-rag-systems/schemas/location-v1.1.json",
+  "version": "1.1.0",
+  "title": "Location Schema",
+  "description": "Minimal schema for location scene consistency in RAG system",
+  "type": "object",
+  "required": [
+    "location_id",
+    "name",
+    "description"
+  ],
+  "properties": {
+    "location_id": {
+      "type": "string",
+      "description": "Unique identifier for the location",
+      "pattern": "^loc_[a-z_]+_\\d{3}$",
+      "examples": ["loc_office_001", "loc_rooftop_001"]
+    },
+    "name": {
+      "type": "string",
+      "description": "Location name",
+      "minLength": 1,
+      "examples": ["Isaac's Office", "Rooftop at Sunset"]
+    },
+    "description": {
+      "type": "string",
+      "description": "Visual description of the location",
+      "minLength": 20,
+      "maxLength": 500,
+      "examples": [
+        "warmly lit office interior, wooden shelves and drawers, desk with monitor, large window with city skyline view"
+      ]
+    },
+    "type": {
+      "type": "string",
+      "description": "Location type",
+      "enum": ["indoor", "outdoor", "mixed"],
+      "examples": ["indoor", "outdoor"]
+    },
+    "tags": {
+      "type": "array",
+      "description": "Searchable tags describing the location's inherent style and environment.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "residential", "commercial", "industrial",
+          "urban", "suburban", "rural", "natural",
+          "modern", "futuristic", "traditional", "abandoned"
+        ]
+      },
+      "uniqueItems": true,
+      "examples": [
+        ["urban", "modern"]
+      ],
+      "$comment": "Standardized taxonomy for consistent retrieval. Scene-specific context like time of day is now handled by the 'setting' object."
+    },
+    "embedding_id": {
+      "type": "string",
+      "description": "Reference to vector embedding",
+      "pattern": "^emb_loc_[a-z_]+_\\d{3}$",
+      "examples": ["emb_loc_office_001", "emb_loc_city_center_001"],
+      "$comment": "Must derive from location_id: loc_X_### → emb_loc_X_###"
+    },
+    "canonical_image_path": {
+      "type": "string",
+      "description": "Optional path or URI to location reference image",
+      "pattern": "^(data/locations/|https?://|s3://|gs://).+\\.(jpg|jpeg|png|webp)$",
+      "examples": [
+        "data/locations/office.jpg",
+        "https://storage.example.com/locations/rooftop_v2.png",
+        "s3://bucket/locations/lab_001.jpg"
+      ],
+      "$comment": "Supports local paths, HTTP URLs, and cloud storage (S3, GCS)"
+    },
+    "setting": {
+      "type": "object",
+      "description": "Contextual scene setting metadata for enforcing visual and temporal consistency in RAG retrieval",
+      "properties": {
+        "location": {
+          "type": "string",
+          "description": "Primary location descriptor",
+          "examples": ["office", "laboratory", "street", "bedroom"]
+        },
+        "time_of_day": {
+          "type": "string",
+          "description": "Time context of the scene",
+          "enum": ["daytime", "nighttime", "dawn", "dusk"],
+          "examples": ["daytime"]
+        },
+        "weather": {
+          "type": "string",
+          "description": "Weather or ambient condition",
+          "enum": ["sunny", "cloudy", "rainy", "stormy", "snowy", "foggy"],
+          "examples": ["sunny"]
+        },
+        "props": {
+          "type": "array",
+          "description": "Key objects or scene props present in the location",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["desk", "laptop", "chair"]]
+        }
+      },
+      "required": ["location"],
+      "additionalProperties": false
+    },
+    "entity_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version number for the canonical entity record, incremented when the entity definition changes",
+      "examples": [1, 2, 3]
+    },
+    "metadata": {
+      "$ref": "metadata_schema.json",
+      "description": "Shared metadata structure"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": ["location_id", "embedding_id"]
+      },
+      "then": {
+        "properties": {
+          "embedding_id": {
+            "pattern": "^emb_loc_[a-z_]+_\\d{3}$",
+            "$comment": "Embedding ID must derive from location_id for consistency"
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

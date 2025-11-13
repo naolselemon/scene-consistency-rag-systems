@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Character Images
+data/characters/*.jpg
+data/characters/*.png
+data/characters/*.jpeg
+data/characters/*.gif
+data/characters/*.webp
+
+# Data & Models
+*.faiss
+*.index
+embeddings/
+models/
+data/embeddings/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# pytest
+.pytest_cache/
